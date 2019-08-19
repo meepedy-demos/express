@@ -1,7 +1,9 @@
 const express = require('express');
+const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
+app.use(cors());
 
 //localhost:3000/location?location=blah
 app.get('/location', (request, response) => {
