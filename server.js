@@ -25,8 +25,21 @@ function Location(query, geoData){
 }
 
 app.get('/weather', (request, response) => {
+    const darkskyData = require('./data/darksky.json');
 
+    const weatherSummaries = [];
+  
+    darkskyData.daily.data.forEach(day => {
+      weatherSummaries.push(new Weather(day));
+    });
+  
+    response.send(weatherSummaries);
 });
+
+function Weather(day) {
+    this.forecast = day.summary;
+    this.time = new Date(day.time * 1000).toString().slice(0, 15);
+  }
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
