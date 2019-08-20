@@ -1,20 +1,21 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+const superagent = require('superagent');
 
 const app = express();
 app.use(cors());
 
-//localhost:3000/location?location=blah
 app.get('/location', (request, response) => {
     try{
-        const geoData = require('./data/geo.json');
-        const location = new Location(request.query.location, geoData);
-        response.send(location);
+        superagent.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${request.query.location}&key=${process.env.GEOCODEAPI_KEY}`)
+        .then((geoData) => {
+            const location = new Location(request.query.location, geoData.body);
+            response.send(location);
+        });
     } catch(error){
         response.status(500).send('Sorry something went wrong.')
     }
-
 });
 
 function Location(query, geoData){
@@ -25,16 +26,21 @@ function Location(query, geoData){
 }
 
 app.get('/weather', (request, response) => {
-    const darkskyData = require('./data/darksky.json');
+    try{
+        const darkskyData = require('./data/darksky.json');
 
-    const weatherSummaries = [];
-  
-    darkskyData.daily.data.forEach(day => {
-      weatherSummaries.push(new Weather(day));
-    });
-  
-    response.send(weatherSummaries);
+        const weatherSummaries = [];
+
+        darkskyData.daily.data.forEach(day => {
+        weatherSummaries.push(new Weather(day));
+        });
+    
+        response.send(weatherSummaries);
+    } catch(error){
+        response.status(500).send('Sorry something went wrong.');
+    }
 });
+ 
 
 function Weather(day) {
     this.forecast = day.summary;
